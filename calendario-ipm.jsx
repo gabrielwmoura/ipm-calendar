@@ -1,0 +1,528 @@
+import { useState } from "react";
+
+const OG = "#E05500";
+const BK = "#1C1C2E";
+
+const START = new Date(2026, 5, 1);
+const END_X = new Date(2028, 0, 1);
+const TODAY = new Date(2026, 5, 22);
+const TOTAL = END_X - START;
+
+const cpct    = d => Math.max(0, Math.min(100, ((new Date(d) - START) / TOTAL) * 100));
+const MO_PT   = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+const fmtFull = ds => { const [y,m,d] = ds.split("-"); return `${d}/${m}/${y}`; };
+const txtClr  = hex => {
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  return (0.299*r+0.587*g+0.114*b)/255 > 0.60 ? BK : "white";
+};
+
+const MONTHS = [];
+for (let y=2026; y<=2027; y++) {
+  for (let m=y===2026?5:0; m<=11; m++) {
+    const d0=new Date(y,m,1), d1=new Date(y,m+1,1);
+    MONTHS.push({ key:`${y}-${m}`, lbl:MO_PT[m], isJan:m===0,
+      left:((d0-START)/TOTAL)*100, width:((d1-d0)/TOTAL)*100 });
+  }
+}
+const JP = ((new Date(2027,0,1)-START)/TOTAL)*100;
+const TP = ((TODAY-START)/TOTAL)*100;
+
+// ─── Logo ────────────────────────────────────────────────────────────────────
+const IPMLogo = () => (
+  <div style={{ display:"flex", alignItems:"center", gap:10 }}>
+    <svg viewBox="0 0 52 52" width="40" height="40">
+      <polygon points="38,3 49,14 14,49 3,38" fill="#7A2500"/>
+      <polygon points="3,14 14,3 49,38 38,49" fill="#E05200"/>
+    </svg>
+    <span style={{ fontSize:24, fontWeight:900, letterSpacing:-1,
+                   fontFamily:"system-ui,-apple-system,sans-serif", color:BK, lineHeight:1 }}>
+      <span style={{ fontSize:20 }}>i</span>PM
+    </span>
+  </div>
+);
+
+const Gem = ({ color=OG, sz=11 }) => (
+  <svg width={sz} height={sz} viewBox="0 0 10 10" style={{ display:"block", flexShrink:0 }}>
+    <polygon points="5,0 10,5 5,10 0,5" fill={color}/>
+  </svg>
+);
+
+// Stripe helper for marco background
+const stripe = c => `repeating-linear-gradient(-45deg,${c}32,${c}32 2px,transparent 2px,transparent 7px)`;
+
+const GLines = () => (
+  <>
+    {MONTHS.map(m=>(
+      <div key={m.key} style={{ position:"absolute",left:`${m.left}%`,top:0,bottom:0,
+                                 width:1,background:"#E4E8F4",zIndex:1,pointerEvents:"none" }}/>
+    ))}
+    <div style={{ position:"absolute",left:`${JP}%`,top:0,bottom:0,width:2,
+                  background:`${OG}28`,zIndex:5,pointerEvents:"none",transform:"translateX(-1px)" }}/>
+    <div style={{ position:"absolute",left:`${TP}%`,top:0,bottom:0,width:2,
+                  background:`${OG}D0`,zIndex:6,pointerEvents:"none",transform:"translateX(-1px)" }}/>
+  </>
+);
+
+// ─── Products ────────────────────────────────────────────────────────────────
+const PRODS = [
+
+  /* 1 ── Mentoria Residência ──────────────────────────────────────────────── */
+  { id:"mentoria", name:"Mentoria Residência", color:"#E8630C",
+    rows:[
+      { lbl:"Mentoria + Extensivo",          v:["2026-09-01","2027-04-30"], c:null },
+      { lbl:"Análise dos Editais",       st:"marco",     v:["2026-07-01","2026-12-31"], c:null },
+      { lbl:"IPM Bus",                   st:"marco",     v:["2026-10-01","2027-01-31"], c:null },
+      { lbl:"IPM Dicas",                 st:"marco",     v:["2026-10-01","2027-01-31"], c:null },
+      { lbl:"Kit dos Aprovados",         st:"marco",     v:["2027-01-01","2027-04-30"], c:null },
+    ],
+    provas:[
+      { d:"2026-09-13", t:"Prova ENAMED + Revalida (mesma data)" },
+    ],
+    panel:{ provas:["Prova ENAMED: 13/09/2026 (presencial) — mesma data do Revalida"], notas:[],
+      turmas:[
+        {n:"Período de vendas",rows:["01/09/2026 → 30/04/2027","Confirmado"]},
+        {n:"Análise dos Editais (Jul–Dez/26)",rows:["Período de análise dos editais das residências","Oportunidade de conteúdo e nutrição de leads"]},
+        {n:"IPM Bus (Out/26–Jan/27)",rows:["Mobilização e captação de público em trânsito para provas"]},
+        {n:"IPM Dicas (Out/26–Jan/27)",rows:["Série de conteúdo de preparação para as residências"]},
+        {n:"Kit dos Aprovados (Jan–Abr/27)",rows:["Material para alunos aprovados nas residências","Entrada natural no IPM Residentes"]},
+      ]} },
+
+  /* 2 ── IPM Código ───────────────────────────────────────────────────────── */
+  { id:"codigo", name:"IPM Código", color:"#007E6A",
+    rows:[
+      { lbl:"Código Residência", v:["2026-06-09","2026-09-30"], c:["2026-06-30","2027-01-30"] },
+      { lbl:"Código Revalida",   v:["2026-06-17","2026-09-30"], c:["2026-06-30","2027-01-30"] },
+      { lbl:"Código 4º Ano",     v:["2026-06-09","2026-09-30"], c:["2026-06-30","2027-01-30"] },
+    ],
+    provas:[
+      { d:"2026-06-09", t:"Live de Lançamento — 19h (YouTube ao vivo)" },
+      { d:"2026-06-17", t:"Live de Lançamento Revalida — 20h (YouTube)" },
+      { d:"2026-09-13", t:"Prova ENAMED + Revalida (mesma data)" },
+    ],
+    panel:{
+      provas:[
+        "Live de Lançamento: 09/06 às 19h (YouTube ao vivo)",
+        "Live Lançamento Revalida: 17/06 às 20h (YouTube — gravado/transmissão)",
+        "Live início da plataforma: 29/06 (horário a definir) — ao vivo na plataforma",
+        "Início do cronograma: 30/06/2026",
+        "Live sobre o ENAMED: 01/07 às 20h (YouTube ao vivo)",
+        "Prova ENAMED: 13/09/2026 (presencial)",
+        "⚑ A prova do Revalida acontece na mesma data — 13/09/2026",
+        "Fim acesso à plataforma: 30/01/2027",
+      ],
+      notas:["30 instituições: ENAMED, AMRIGS, HCPA, USP, UNICAMP, UNIFESP, UERJ e +22"],
+      turmas:[
+        {n:"Código Residência",rows:["Vendas: 09/06 → 30/09/2026","Foco: ENAMED + 29 inst. de residência","Plataforma: 30/06/2026 → 30/01/2027"]},
+        {n:"Código Revalida",  rows:["Vendas: 17/06 → 30/09/2026","Plataforma: 30/06/2026 → 30/01/2027"]},
+        {n:"Código 4º Ano",    rows:["Vendas: 09/06 → 30/09/2026","Plataforma: 30/06/2026 → 30/01/2027"]},
+      ]
+    }
+  },
+
+  /* 3 ── Mentoria Derma ───────────────────────────────────────────────────── */
+  { id:"mentoria-derma", name:"Mentoria Derma", color:"#C1546C",
+    rows:[
+      { lbl:"Semi-Extensivo 2026", st:"discreto", v:["2026-07-20","2026-08-31"], c:["2026-08-03","2026-12-31"] },
+      { lbl:"Intensivo 2026",      v:["2026-10-19","2026-12-10"], c:["2026-11-03","2027-04-30"] },
+      { lbl:"Extensivo 2027",      st:"a-definir", v:["2027-01-04","2027-08-31"], c:["2027-01-04","2027-12-31"] },
+    ],
+    provas:[],
+    panel:{ provas:[], notas:["Meta 2026: R$1.800+ ✓","Cap: ~30 alunos | Pot 2027: R$3M"],
+      turmas:[
+        {n:"Semi-Extensivo 2026 (10–15 vagas)",rows:["Vendas: 20/07 → 31/08/2026","Início: 03/08","Stories + site — SEM post no feed"]},
+        {n:"Intensivo 2026 — identidade própria",rows:["Vendas: 19/10 → 10/12/2026","Início: 03/11","Lança 1 sem. antes do Atalhos (~23/out)"]},
+        {n:"Extensivo 2027 — A definir",rows:["Previsão início vendas: 04/01/2027","Previsão período do curso: jan → dez/2027","Datas a confirmar"]},
+      ]} },
+
+  /* 4 ── DERMAPRO ─────────────────────────────────────────────────────────── */
+  { id:"dermapro", name:"DERMAPRO", color:"#DA7A51",
+    rows:[
+      { lbl:"Extensivo 2026",  v:["2026-06-01","2026-09-30"], c:["2026-04-14","2027-04-30"] },
+      { lbl:"Intensivo 2026",  v:["2026-11-05","2027-02-05"], c:["2026-11-25","2027-03-25"] },
+      { lbl:"Ext. 2027",       st:"a-definir", v:["2027-02-15","2027-08-25"], c:["2027-04-25","2028-04-25"] },
+    ],
+    provas:[
+      { d:"2026-06-21", t:"2ª Fase TPI" },
+      { d:"2026-07-03", t:"Resultado TPI" },
+    ],
+    panel:{ provas:["1ª Fase: 19/04/2026","2ª Fase: 21/06/2026","Resultado: 03/07/2026"], notas:[],
+      turmas:[
+        {n:"Extensivo 2026",rows:["Encerramento vendas: 30/09/2026","Curso: 14/04/2026 → 30/04/2027"]},
+        {n:"Intensivo 2026",rows:["Vendas: 05/11/2026 → 05/02/2027","Curso: 25/11/2026 → 25/03/2027"]},
+        {n:"Extensivo 2027 — A definir",rows:["Vendas: 15/02 → 25/08/2027","Curso: 25/04/2027 → 25/04/2028","Lançamento: live de correção pós-TPI"]},
+      ]} },
+
+  /* 5 ── OFTPRO ───────────────────────────────────────────────────────────── */
+  { id:"oftpro", name:"OFTPRO", color:"#177DD8",
+    rows:[
+      { lbl:"Intensivo 2026", st:"a-definir", v:["2026-07-15","2026-11-15"], c:["2026-08-15","2026-12-15"] },
+      { lbl:"Extensivo 2027", v:["2026-10-18","2027-05-25"], c:["2027-02-15","2027-12-31"] },
+    ],
+    provas:[
+      { d:"2027-01-15", t:"Prova Teórica (a confirmar)" },
+      { d:"2027-03-01", t:"Resultado (a confirmar)" },
+    ],
+    panel:{ provas:["Teórica: Jan/2027 (a confirmar)","Prática: Fev–Mar/2027 (a confirmar)","Resultado: Mar/2027 (a confirmar)"],
+      notas:["Lançamento Ext. 2027: 18/10 — Dia do Médico 🩺"],
+      turmas:[
+        {n:"Intensivo 2026 — A definir",rows:["Vendas: 15/07 → 15/11/2026","Curso: 15/08 → 15/12/2026","Aguardando reunião c/ Galhardo"]},
+        {n:"Extensivo 2027",rows:["Vendas: 18/10/2026 (Dia do Médico) → 25/05/2027","Curso: 15/02/2027 → 30/01/2028"]},
+      ]} },
+
+  /* 6 ── EMERPRO ──────────────────────────────────────────────────────────── */
+  { id:"emerpro", name:"EMERPRO", color:"#E3EB02",
+    rows:[
+      { lbl:"Intensivo 2026",  v:["2026-06-01","2026-07-24"], c:["2026-06-02","2026-09-27"] },
+      { lbl:"Extensivo 2027",  v:["2026-09-05","2027-03-05"], c:["2026-11-09","2027-10-30"] },
+    ],
+    provas:[
+      { d:"2026-08-02", t:"Prova Teórica" },
+      { d:"2026-09-27", t:"Prova Prática (SP)" },
+      { d:"2026-10-13", t:"Resultado Final" },
+    ],
+    panel:{ provas:["Teórica: 02/08/2026","Prática (SP): 27/09/2026","Resultado: 13/10/2026"], notas:[],
+      turmas:[
+        {n:"Intensivo 2026",rows:["Vendas: 01/06 → 24/07/2026","Curso: 02/06 → 27/09/2026"]},
+        {n:"Extensivo 2027",rows:["Vendas: 05/09/2026 → 05/03/2027","Curso: 09/11/2026 → 30/10/2027"]},
+      ]} },
+
+  /* 7 ── ORTOPRO ──────────────────────────────────────────────────────────── */
+  { id:"ortopro", name:"ORTOPRO", color:"#8FB44A",
+    rows:[
+      { lbl:"Intensivo 2026",  v:["2026-07-27","2026-12-05"], c:["2026-10-05","2027-01-05"] },
+      { lbl:"Extensivo 2027",  st:"a-definir", v:["2027-03-01","2027-10-31"], c:["2027-06-01","2028-03-31"] },
+    ],
+    provas:[
+      { d:"2027-01-10", t:"1ª Fase (online)" },
+      { d:"2027-03-13", t:"2ª Fase (presencial)" },
+      { d:"2027-04-30", t:"Resultado (previsto)" },
+    ],
+    panel:{ provas:["1ª Fase (online): 10/01/2027","2ª Fase (presencial): 13–14/03/2027*","Resultado: 30/04/2027*","*previsto"], notas:[],
+      turmas:[
+        {n:"Intensivo 2026",rows:["Vendas: 27/07 → 05/12/2026","Curso: 05/10/2026 → 05/01/2027"]},
+        {n:"Extensivo 2027 — A definir",rows:["Previsão: mar → out/2027","Datas a definir"]},
+      ]} },
+
+  /* 8 ── IPM Residentes ───────────────────────────────────────────────────── */
+  { id:"residentes", name:"IPM Residentes", color:"#FF5318",
+    rows:[
+      { lbl:"Assinatura",                   v:["2026-06-01","2027-12-31"], c:null },
+      { lbl:"Aprovações Residência ★",   st:"marco", v:["2027-01-01","2027-04-30"], c:null },
+    ],
+    provas:[],
+    panel:{ provas:[], notas:[],
+      turmas:[
+        {n:"Venda contínua",rows:["Jun/2026 → Dez/2027","Sempre aberto"]},
+        {n:"Marco: Aprovações Jan–Abr/27",rows:["Período de divulgação dos resultados","Alunos aprovados → público-alvo do IPM Residentes","Oportunidade de marketing intensificado"]},
+      ]} },
+
+  /* 9 ── IPM Day ──────────────────────────────────────────────────────────── */
+  { id:"ipm-day", name:"IPM Day", color:"#E89020",
+    rows:[{ lbl:"Evento SP — 20/02/2027", v:["2027-02-20","2027-02-20"], c:null }],
+    provas:[{ d:"2027-02-20", t:"IPM Day — São Paulo (evento presencial)" }],
+    panel:{ provas:["20/02/2027 — São Paulo/SP (confirmado)"], notas:[],
+      turmas:[{n:"IPM Day 2027",rows:["Data: 20/02/2027","Local: São Paulo/SP","Evento presencial confirmado"]}] } },
+];
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+export default function App() {
+  const [sel, setSel] = useState(null);
+  const [tip, setTip] = useState(null);
+  const sp = PRODS.find(x => x.id === sel);
+  const SW=186, GH=34, RH=44, GP=5;
+
+  return (
+    <>
+      <style>{`
+        @keyframes pIn{from{transform:translateX(14px);opacity:0}to{transform:translateX(0);opacity:1}}
+        ::-webkit-scrollbar{width:5px;height:5px}
+        ::-webkit-scrollbar-track{background:#EEF1F7}
+        ::-webkit-scrollbar-thumb{background:#C8D0E4;border-radius:3px}
+        ::-webkit-scrollbar-thumb:hover{background:#A8B4CC}
+      `}</style>
+
+      <div style={{ background:"#EEF1F7", color:BK, height:"100vh", display:"flex",
+                    flexDirection:"column", fontFamily:'system-ui,-apple-system,"Segoe UI",sans-serif',
+                    overflow:"hidden" }}>
+
+        {/* TOP BAR */}
+        <div style={{ flexShrink:0, padding:"11px 20px 10px", background:"white",
+                      borderBottom:"1px solid #DDE2EE", boxShadow:"0 1px 10px rgba(0,0,0,0.07)" }}>
+          <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
+            <IPMLogo/>
+            <div style={{ textAlign:"right" }}>
+              <div style={{ fontSize:8, fontWeight:800, letterSpacing:2.5, color:"#A0ABCC", textTransform:"uppercase" }}>Calendário de Vendas</div>
+              <div style={{ fontSize:11, fontWeight:700, color:BK, letterSpacing:0.5 }}>Jun 2026 → Dez 2027</div>
+            </div>
+          </div>
+          {/* Legend */}
+          <div style={{ display:"flex", gap:16, flexWrap:"wrap", alignItems:"center" }}>
+            {[
+              /* Vendas */
+              [<div style={{ width:24,height:9,background:OG,borderRadius:5 }}/>, "Período de vendas"],
+              /* Curso */
+              [<div style={{ width:24,height:8,background:OG,opacity:0.24,borderRadius:4 }}/>, "Período do curso"],
+              /* Marco — diagonal stripes for emphasis */
+              [<div style={{ width:24,height:10,borderRadius:5,
+                             border:`2px solid ${OG}CC`,
+                             background:stripe(OG) }}/>,
+               "Marco de oportunidade"],
+              /* A definir */
+              [<div style={{ width:24,height:9,border:"2px dashed #A8B4CC",borderRadius:5 }}/>, "A definir"],
+              /* Prova */
+              [<Gem color={OG} sz={9}/>, "Evento importante"],
+              /* Hoje */
+              [<div style={{ width:2,height:14,background:OG }}/>, "Hoje"],
+              /* Jan 2027 */
+              [<div style={{ width:2,height:14,background:`${OG}40` }}/>, "Jan 2027"],
+            ].map(([el,lbl],i)=>(
+              <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                {el}<span style={{ fontSize:10, color:"#8890AA" }}>{lbl}</span>
+              </div>
+            ))}
+            <span style={{ marginLeft:"auto", fontSize:10, color:"#BCC4D8", fontStyle:"italic" }}>
+              ← clique num produto para detalhes
+            </span>
+          </div>
+        </div>
+
+        {/* MAIN SCROLL */}
+        <div style={{ flex:1, overflow:"auto" }}>
+          <div style={{ minWidth:870 }}>
+
+            {/* MONTH HEADER */}
+            <div style={{ display:"flex", position:"sticky", top:0, zIndex:25, height:52,
+                          background:"white", borderBottom:"1px solid #DDE2EE",
+                          boxShadow:"0 2px 10px rgba(0,0,0,0.06)" }}>
+              <div style={{ width:SW, flexShrink:0, position:"sticky", left:0, zIndex:26,
+                            background:"white", borderRight:"1px solid #E4E8F4",
+                            display:"flex", alignItems:"flex-end", padding:"0 14px 7px" }}>
+                <span style={{ fontSize:8,color:"#C0C8DC",fontWeight:700,letterSpacing:2 }}>PRODUTO</span>
+              </div>
+              <div style={{ flex:1, position:"relative", overflow:"visible" }}>
+                <div style={{ position:"absolute",top:4,left:0,width:`${JP}%`,fontSize:8,fontWeight:800,
+                              letterSpacing:2,color:`${OG}60`,textAlign:"center",textTransform:"uppercase",pointerEvents:"none" }}>2026</div>
+                <div style={{ position:"absolute",top:4,left:`${JP}%`,right:0,fontSize:8,fontWeight:800,
+                              letterSpacing:2,color:`${BK}50`,textAlign:"center",textTransform:"uppercase",pointerEvents:"none" }}>2027</div>
+                <div style={{ position:"absolute",top:3,left:`${TP}%`,transform:"translateX(-50%)",
+                              fontSize:7,fontWeight:800,color:OG,letterSpacing:1,
+                              whiteSpace:"nowrap",textTransform:"uppercase",pointerEvents:"none",opacity:0.85 }}>hoje</div>
+                {MONTHS.map(m=>(
+                  <div key={m.key} style={{ position:"absolute",left:`${m.left}%`,width:`${m.width}%`,
+                      bottom:0,height:30,display:"flex",alignItems:"center",justifyContent:"center",
+                      fontSize:11,color:m.isJan?BK:"#A0ABCC",fontWeight:m.isJan?700:500,
+                      letterSpacing:0.5,borderLeft:m.isJan?`2px solid ${OG}55`:"1px solid #E4E8F4" }}>
+                    {m.lbl}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PRODUCT GROUPS */}
+            {PRODS.map((prod,pi)=>{
+              const odd   = pi%2===1;
+              const grpBg = odd?"#F8F9FE":"#FFFFFF";
+              const rA    = odd?"#F6F7FC":"#FAFBFF";
+              const rB    = odd?"#F2F4FA":"#F6F8FD";
+              const isOpen = sel===prod.id;
+              const tc    = txtClr(prod.color);
+
+              return (
+                <div key={prod.id}>
+
+                  {/* Group header */}
+                  <div style={{ display:"flex",height:GH,cursor:"pointer" }}
+                       onClick={()=>setSel(isOpen?null:prod.id)}>
+                    <div style={{ width:SW,flexShrink:0,position:"sticky",left:0,zIndex:10,
+                                  background:grpBg,borderBottom:"1px solid #E4E8F4",
+                                  borderRight:"1px solid #E4E8F4",borderLeft:`4px solid ${prod.color}`,
+                                  display:"flex",alignItems:"center",gap:8,padding:"0 10px 0 12px",
+                                  userSelect:"none" }}>
+                      <div style={{ width:8,height:8,borderRadius:"50%",background:prod.color,flexShrink:0 }}/>
+                      <span style={{ fontSize:12,fontWeight:800,color:isOpen?prod.color:BK,flex:1,
+                                     whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                                     transition:"color 0.15s" }}>{prod.name}</span>
+                      <span style={{ fontSize:9,color:"#BCC4D8",flexShrink:0 }}>{isOpen?"◀":"▶"}</span>
+                    </div>
+                    <div style={{ flex:1,background:grpBg,borderBottom:"1px solid #E4E8F4",
+                                  position:"relative",overflow:"visible" }}>
+                      <GLines/>
+                      {prod.provas.map((prv,ri)=>{
+                        const px=((new Date(prv.d)-START)/TOTAL)*100;
+                        if(px<0||px>100) return null;
+                        return(
+                          <div key={ri} style={{ position:"absolute",left:`${px}%`,top:"50%",
+                                                 transform:"translate(-50%,-50%)",zIndex:12,cursor:"help" }}
+                            onMouseEnter={e=>setTip({x:e.clientX,y:e.clientY,t:`${prv.t} · ${fmtFull(prv.d)}`})}
+                            onMouseLeave={()=>setTip(null)}>
+                            <Gem color={prod.color} sz={13}/>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Turma / marco rows */}
+                  {prod.rows.map((row,ri)=>{
+                    const isDash  = row.st==="stand-by"||row.st==="a-definir";
+                    const isMarco = row.st==="marco";
+                    const rbg     = ri%2===0?rA:rB;
+                    let vL=null,vW=null,cL=null,cW=null;
+                    if(row.v){ const l=cpct(row.v[0]),r=cpct(row.v[1]); vL=l; vW=Math.max(0.4,r-l); }
+                    if(row.c){ const l=cpct(row.c[0]),r=cpct(row.c[1]); cL=l; cW=Math.max(0.4,r-l); }
+
+                    return(
+                      <div key={ri} style={{ display:"flex",height:RH,cursor:"pointer" }}
+                           onClick={()=>setSel(isOpen?null:prod.id)}>
+                        {/* Left label */}
+                        <div style={{ width:SW,flexShrink:0,position:"sticky",left:0,zIndex:10,
+                                      background:rbg,borderBottom:"1px solid #EAEEF6",
+                                      borderRight:"1px solid #E4E8F4",borderLeft:"4px solid transparent",
+                                      display:"flex",alignItems:"center",paddingLeft:28,paddingRight:8 }}>
+                          <span style={{
+                            fontSize:10,
+                            color: prod.color,
+                            fontWeight: 700,
+                            whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"
+                          }}>{row.lbl}</span>
+                        </div>
+                        {/* Bar area */}
+                        <div style={{ flex:1,background:rbg,borderBottom:"1px solid #EAEEF6",
+                                      position:"relative",overflow:"visible" }}>
+                          <GLines/>
+                          {/* Curso bar (lighter, same height as vendas, behind) */}
+                          {cL!==null&&(
+                            <div
+                              onMouseEnter={e=>setTip({x:e.clientX,y:e.clientY,
+                                t:`Período do curso: ${fmtFull(row.c[0])} → ${fmtFull(row.c[1])}`})}
+                              onMouseLeave={()=>setTip(null)}
+                              style={{ position:"absolute",left:`${cL}%`,width:`${cW}%`,
+                                        top:7,height:24,background:prod.color,
+                                        borderRadius:8,opacity:isDash?0.07:0.22,zIndex:3,
+                                        cursor:"default" }}/>
+                          )}
+                          {/* Vendas / Marco bar */}
+                          {vL!==null&&(
+                            <div
+                              onMouseEnter={e=>setTip({x:e.clientX,y:e.clientY,
+                                t:`${row.lbl}: ${fmtFull(row.v[0])} → ${fmtFull(row.v[1])}`})}
+                              onMouseLeave={()=>setTip(null)}
+                              style={{
+                                position:"absolute",left:`${vL}%`,width:`${vW}%`,
+                                top:7,height:24,borderRadius:8,zIndex:4,
+                                display:"flex",alignItems:"center",paddingLeft:8,overflow:"hidden",
+                                // Visual style by type:
+                                background: isDash  ? "transparent"
+                                           : isMarco ? stripe(prod.color)
+                                           : prod.color,
+                                border: isDash  ? `2px dashed ${prod.color}`
+                               : isMarco ? `2px solid ${prod.color}CC`
+                               : "none",
+                                opacity: isDash ? 0.55 : 1,
+                                boxShadow: (!isDash&&!isMarco) ? `0 2px 8px ${prod.color}28` : "none",
+                              }}>
+                              {!isDash && vW>5 && (
+                                <span style={{
+                                  fontSize:10, fontWeight:700,
+                                  color: isMarco ? prod.color : tc,
+                                  whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"
+                                }}>{row.lbl}</span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+
+                  {/* Gap */}
+                  <div style={{ display:"flex",height:GP }}>
+                    <div style={{ width:SW,flexShrink:0,position:"sticky",left:0,
+                                  background:"#EEF1F7",borderBottom:"1px solid #DDE2EE",
+                                  borderRight:"1px solid #E4E8F4" }}/>
+                    <div style={{ flex:1,background:"#EEF1F7",borderBottom:"1px solid #DDE2EE" }}/>
+                  </div>
+                </div>
+              );
+            })}
+            <div style={{ height:24 }}/>
+          </div>
+        </div>
+
+        {/* SIDE PANEL */}
+        {sp&&(
+          <div style={{ position:"fixed",top:0,right:0,bottom:0,width:300,
+                        background:"white",borderLeft:`3px solid ${sp.color}`,
+                        zIndex:50,display:"flex",flexDirection:"column",
+                        boxShadow:"-10px 0 40px rgba(0,0,0,0.12)",animation:"pIn 0.2s ease" }}>
+            <div style={{ padding:"14px 14px 12px",borderBottom:"1px solid #EEF1F8",
+                          background:`${sp.color}12`,flexShrink:0,
+                          display:"flex",alignItems:"center",justifyContent:"space-between" }}>
+              <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+                <div style={{ width:10,height:10,borderRadius:"50%",background:sp.color }}/>
+                <span style={{ fontSize:13,fontWeight:800,color:sp.color }}>{sp.name}</span>
+              </div>
+              <button onClick={()=>setSel(null)}
+                style={{ background:"none",border:"none",color:"#A8B4CC",
+                         cursor:"pointer",fontSize:18,padding:"2px 6px",lineHeight:1 }}>✕</button>
+            </div>
+            <div style={{ flex:1,overflowY:"auto",padding:14 }}>
+              {sp.panel.provas.length>0&&(
+                <div style={{ marginBottom:18 }}>
+                  <div style={{ display:"flex",alignItems:"center",gap:5,marginBottom:8 }}>
+                    <Gem color={sp.color} sz={8}/>
+                    <span style={{ fontSize:8,fontWeight:800,letterSpacing:2.5,
+                                   color:sp.color,opacity:0.85,textTransform:"uppercase" }}>
+                      {sp.id==="codigo" ? "Datas-chave" : sp.id==="ipm-day" ? "Evento" : "Provas"}
+                    </span>
+                  </div>
+                  {sp.panel.provas.map((l,i)=>(
+                    <div key={i} style={{ fontSize:11,color:"#6878A0",marginBottom:4,
+                                          paddingLeft:10,borderLeft:`2px solid ${sp.color}35` }}>{l}</div>
+                  ))}
+                </div>
+              )}
+              <div style={{ marginBottom:18 }}>
+                <div style={{ fontSize:8,fontWeight:800,letterSpacing:2.5,
+                               color:`${sp.color}88`,textTransform:"uppercase",marginBottom:10 }}>
+                  {sp.id==="codigo" ? "Subprodutos" : "Turmas / Marcos"}
+                </div>
+                {sp.panel.turmas.map((t,i)=>(
+                  <div key={i} style={{ marginBottom:10,padding:"10px 12px",
+                                        background:"#F4F6FC",borderRadius:8,
+                                        border:`1px solid ${sp.color}22` }}>
+                    <div style={{ fontSize:11,fontWeight:700,color:BK,marginBottom:6 }}>{t.n}</div>
+                    {t.rows.map((r,ri)=>(
+                      <div key={ri} style={{ fontSize:11,color:"#8090B4",marginBottom:2,paddingLeft:6 }}>· {r}</div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+              {sp.panel.notas.length>0&&(
+                <div>
+                  <div style={{ fontSize:8,fontWeight:800,letterSpacing:2.5,
+                                 color:"#C0C8DC",textTransform:"uppercase",marginBottom:8 }}>Notas</div>
+                  {sp.panel.notas.map((n,i)=>(
+                    <div key={i} style={{ fontSize:11,color:"#8090B4",marginBottom:5,
+                                          paddingLeft:8,borderLeft:"2px solid #E4E8F4" }}>{n}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TOOLTIP */}
+        {tip&&(
+          <div style={{ position:"fixed",left:tip.x+12,top:tip.y-40,
+                        background:BK,color:"white",fontSize:11,
+                        padding:"6px 11px",borderRadius:7,zIndex:100,
+                        pointerEvents:"none",whiteSpace:"nowrap",
+                        boxShadow:"0 4px 16px rgba(0,0,0,0.25)" }}>
+            {tip.t}
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
