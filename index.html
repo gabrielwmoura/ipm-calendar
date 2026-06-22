@@ -16,25 +16,24 @@
     /* Password overlay */
     #pw-overlay{
       position:fixed;inset:0;z-index:9999;
-      background:rgba(28,28,46,0.97);
+      background:#000;
       display:flex;align-items:center;justify-content:center;
     }
     #pw-overlay.hidden{display:none}
     .pw-box{
-      background:#fff;border-radius:16px;
-      padding:40px 36px;width:340px;
-      box-shadow:0 20px 60px rgba(0,0,0,0.4);
+      background:#111;border-radius:16px;
+      padding:40px 36px;width:360px;
+      border:1px solid #222;
       text-align:center;
     }
-    .pw-logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:24px}
-    .pw-logo span{font-size:22px;font-weight:900;letter-spacing:-1px;font-family:system-ui,-apple-system,sans-serif;color:#1C1C2E;line-height:1}
-    .pw-title{font-size:13px;font-weight:700;color:#1C1C2E;margin-bottom:6px;letter-spacing:0.3px}
-    .pw-sub{font-size:11px;color:#A0ABCC;margin-bottom:22px}
+    .pw-logo{display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+    .pw-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:0.3px}
+    .pw-sub{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:22px}
     .pw-input{
-      width:100%;border:2px solid #DDE2EE;border-radius:9px;
+      width:100%;border:1px solid #333;border-radius:9px;
       padding:11px 14px;font-size:14px;font-family:inherit;
       outline:none;transition:border-color 0.15s;letter-spacing:1px;
-      text-align:center;color:#1C1C2E;
+      text-align:center;color:#fff;background:#1a1a1a;
     }
     .pw-input:focus{border-color:#E05500}
     .pw-input.error{border-color:#e53e3e;animation:shake 0.3s ease}
@@ -47,7 +46,7 @@
       letter-spacing:0.5px;transition:background 0.15s;
     }
     .pw-btn:hover{background:#c04a00}
-    .pw-err{font-size:11px;color:#e53e3e;margin-top:10px;height:16px}
+    .pw-err{font-size:11px;color:#ff6b6b;margin-top:10px;height:16px}
     @keyframes shake{
       0%,100%{transform:translateX(0)}
       20%,60%{transform:translateX(-6px)}
@@ -60,13 +59,16 @@
   <div id="pw-overlay">
     <div class="pw-box">
       <div class="pw-logo">
-        <svg viewBox="0 0 246 247" width="44" height="44" xmlns="http://www.w3.org/2000/svg">
+        <svg viewBox="0 0 733 247" height="52" xmlns="http://www.w3.org/2000/svg">
+          <path d="M303.449 60.3652L335.137 60.3652L335.137 91.6953L335.137 183.597L303.449 183.597L303.449 123.025L335.137 91.6953L303.449 91.6953L303.449 60.3652Z" fill="white"/>
+          <path d="M490.007 62.291L398.411 62.291L398.411 91.4542L490.007 91.4542L490.007 124.784L397.358 124.784L366.826 154.988L366.826 185.193L398.411 185.193L398.411 153.947L490.007 153.947L520.538 124.784L520.538 91.4542L490.007 62.291Z" fill="white"/>
+          <path d="M548.757 62.291L548.757 185.193L579.289 185.193L579.289 93.5373L640.352 123.742L701.416 94.5788L701.416 62.291L640.352 93.5373L579.289 62.291L548.757 62.291Z" fill="white"/>
+          <path d="M701.416 94.5781L733.001 94.5781L733.001 185.192L701.416 185.192L701.416 94.5781Z" fill="white"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
           <path fill-rule="evenodd" clip-rule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
         </svg>
-        <span><span style="font-size:18px">i</span>PM</span>
       </div>
       <div class="pw-title">Acesso restrito</div>
       <div class="pw-sub">Insira a senha para visualizar o calendário</div>
@@ -136,18 +138,16 @@
     const TP = ((TODAY-START)/TOTAL)*100;
 
     const IPMLogo = () => (
-      <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-        <svg viewBox="0 0 246 247" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
-          <path fillRule="evenodd" clipRule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
-          <path fillRule="evenodd" clipRule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
-          <path fillRule="evenodd" clipRule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
-          <path fillRule="evenodd" clipRule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
-        </svg>
-        <span style={{ fontSize:24, fontWeight:900, letterSpacing:-1,
-                       fontFamily:"system-ui,-apple-system,sans-serif", color:BK, lineHeight:1 }}>
-          <span style={{ fontSize:20 }}>i</span>PM
-        </span>
-      </div>
+      <svg viewBox="0 0 733 247" height="38" xmlns="http://www.w3.org/2000/svg" style={{display:"block"}}>
+        <path d="M303.449 60.3652L335.137 60.3652L335.137 91.6953L335.137 183.597L303.449 183.597L303.449 123.025L335.137 91.6953L303.449 91.6953L303.449 60.3652Z" fill="white"/>
+        <path d="M490.007 62.291L398.411 62.291L398.411 91.4542L490.007 91.4542L490.007 124.784L397.358 124.784L366.826 154.988L366.826 185.193L398.411 185.193L398.411 153.947L490.007 153.947L520.538 124.784L520.538 91.4542L490.007 62.291Z" fill="white"/>
+        <path d="M548.757 62.291L548.757 185.193L579.289 185.193L579.289 93.5373L640.352 123.742L701.416 94.5788L701.416 62.291L640.352 93.5373L579.289 62.291L548.757 62.291Z" fill="white"/>
+        <path d="M701.416 94.5781L733.001 94.5781L733.001 185.192L701.416 185.192L701.416 94.5781Z" fill="white"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
+      </svg>
     );
 
     const Gem = ({ color=OG, sz=11 }) => (
@@ -341,30 +341,30 @@
                         flexDirection:"column", fontFamily:'system-ui,-apple-system,"Segoe UI",sans-serif',
                         overflow:"hidden" }}>
 
-            <div style={{ flexShrink:0, padding:"11px 20px 10px", background:"white",
-                          borderBottom:"1px solid #DDE2EE", boxShadow:"0 1px 10px rgba(0,0,0,0.07)" }}>
+            <div style={{ flexShrink:0, padding:"11px 20px 10px", background:"#000",
+                          borderBottom:"1px solid #222" }}>
               <div style={{ display:"flex", alignItems:"center", justifyContent:"space-between", marginBottom:10 }}>
                 <IPMLogo/>
                 <div style={{ textAlign:"right" }}>
-                  <div style={{ fontSize:8, fontWeight:800, letterSpacing:2.5, color:"#A0ABCC", textTransform:"uppercase" }}>Calendário de Vendas</div>
-                  <div style={{ fontSize:11, fontWeight:700, color:BK, letterSpacing:0.5 }}>Jun 2026 → Dez 2027</div>
+                  <div style={{ fontSize:8, fontWeight:800, letterSpacing:2.5, color:"rgba(255,255,255,0.35)", textTransform:"uppercase" }}>Calendário de Vendas</div>
+                  <div style={{ fontSize:11, fontWeight:700, color:"rgba(255,255,255,0.8)", letterSpacing:0.5 }}>Jun 2026 → Dez 2027</div>
                 </div>
               </div>
               <div style={{ display:"flex", gap:16, flexWrap:"wrap", alignItems:"center" }}>
                 {[
                   [<div style={{ width:24,height:9,background:OG,borderRadius:5 }}/>, "Período de vendas"],
-                  [<div style={{ width:24,height:8,background:OG,opacity:0.24,borderRadius:4 }}/>, "Período do curso"],
+                  [<div style={{ width:24,height:8,background:OG,opacity:0.4,borderRadius:4 }}/>, "Período do curso"],
                   [<div style={{ width:24,height:10,borderRadius:5,border:`2px solid ${OG}CC`,background:stripe(OG) }}/>, "Marco de oportunidade"],
-                  [<div style={{ width:24,height:9,border:"2px dashed #A8B4CC",borderRadius:5 }}/>, "A definir"],
+                  [<div style={{ width:24,height:9,border:"2px dashed rgba(255,255,255,0.25)",borderRadius:5 }}/>, "A definir"],
                   [<Gem color={OG} sz={9}/>, "Evento importante"],
                   [<div style={{ width:2,height:14,background:OG }}/>, "Hoje"],
-                  [<div style={{ width:2,height:14,background:`${OG}40` }}/>, "Jan 2027"],
+                  [<div style={{ width:2,height:14,background:`${OG}50` }}/>, "Jan 2027"],
                 ].map(([el,lbl],i)=>(
                   <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
-                    {el}<span style={{ fontSize:10, color:"#8890AA" }}>{lbl}</span>
+                    {el}<span style={{ fontSize:10, color:"rgba(255,255,255,0.45)" }}>{lbl}</span>
                   </div>
                 ))}
-                <span style={{ marginLeft:"auto", fontSize:10, color:"#BCC4D8", fontStyle:"italic" }}>
+                <span style={{ marginLeft:"auto", fontSize:10, color:"rgba(255,255,255,0.25)", fontStyle:"italic" }}>
                   ← clique num produto para detalhes
                 </span>
               </div>
