@@ -156,7 +156,8 @@
       </svg>
     );
 
-    const stripe = c => `repeating-linear-gradient(-45deg,${c}EE,${c}EE 2px,transparent 2px,transparent 7px)`;
+    const stripe      = c => `repeating-linear-gradient(-45deg,${c}32,${c}32 2px,transparent 2px,transparent 7px)`;
+    const stripeLegend = c => `repeating-linear-gradient(-45deg,${c},${c} 2px,transparent 2px,transparent 7px)`;
 
     const GLines = () => (
       <>
@@ -354,7 +355,7 @@
                 {[
                   [<div style={{ width:24,height:9,background:OG,borderRadius:5 }}/>, "Período de vendas"],
                   [<div style={{ width:24,height:8,background:OG,opacity:0.4,borderRadius:4 }}/>, "Período do curso"],
-                  [<div style={{ width:24,height:10,borderRadius:5,border:`2px solid ${OG}CC`,background:stripe(OG) }}/>, "Marco de oportunidade"],
+                  [<div style={{ width:24,height:10,borderRadius:5,border:`2px solid ${OG}`,background:stripeLegend(OG) }}/>, "Marco de oportunidade"],
                   [<div style={{ width:24,height:9,border:"2px dashed rgba(255,255,255,0.25)",borderRadius:5 }}/>, "A definir"],
                   [<Gem color={OG} sz={9}/>, "Evento importante"],
                   [<div style={{ width:2,height:14,background:OG }}/>, "Hoje"],
