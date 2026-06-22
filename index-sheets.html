@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Calendário de Produtos — IPM</title>
+  <link rel="icon" href="ipm-logo.svg" type="image/svg+xml">
+  <script src="https://unpkg.com/react@18.3.1/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    html,body,#root{height:100%}
+    body{overflow:hidden}
+
+    #pw-overlay{
+      position:fixed;inset:0;z-index:9999;
+      background:#000;
+      display:flex;align-items:center;justify-content:center;
+    }
+    #pw-overlay.hidden{display:none}
+    .pw-box{
+      background:#111;border-radius:16px;
+      padding:40px 36px;width:360px;
+      border:1px solid #222;
+      text-align:center;
+    }
+    .pw-logo{display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+    .pw-title{font-size:13px;font-weight:700;color:#fff;margin-bottom:6px;letter-spacing:0.3px}
+    .pw-sub{font-size:11px;color:rgba(255,255,255,0.4);margin-bottom:22px}
+    .pw-input{
+      width:100%;border:1px solid #333;border-radius:9px;
+      padding:11px 14px;font-size:14px;font-family:inherit;
+      outline:none;transition:border-color 0.15s;letter-spacing:1px;
+      text-align:center;color:#fff;background:#1a1a1a;
+    }
+    .pw-input:focus{border-color:#E05500}
+    .pw-input.error{border-color:#e53e3e;animation:shake 0.3s ease}
+    .pw-btn{
+      width:100%;margin-top:14px;
+      background:#E05500;color:#fff;
+      border:none;border-radius:9px;
+      padding:12px;font-size:13px;font-weight:800;
+      font-family:inherit;cursor:pointer;
+      letter-spacing:0.5px;transition:background 0.15s;
+    }
+    .pw-btn:hover{background:#c04a00}
+    .pw-err{font-size:11px;color:#ff6b6b;margin-top:10px;height:16px}
+    @keyframes shake{
+      0%,100%{transform:translateX(0)}
+      20%,60%{transform:translateX(-6px)}
+      40%,80%{transform:translateX(6px)}
+    }
+    @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  </style>
+</head>
+<body>
+  <!-- Password gate -->
+  <div id="pw-overlay">
+    <div class="pw-box">
+      <div class="pw-logo">
+        <svg viewBox="0 0 733 247" height="52" xmlns="http://www.w3.org/2000/svg">
+          <path d="M303.449 60.3652L335.137 60.3652L335.137 91.6953L335.137 183.597L303.449 183.597L303.449 123.025L335.137 91.6953L303.449 91.6953L303.449 60.3652Z" fill="white"/>
+          <path d="M490.007 62.291L398.411 62.291L398.411 91.4542L490.007 91.4542L490.007 124.784L397.358 124.784L366.826 154.988L366.826 185.193L398.411 185.193L398.411 153.947L490.007 153.947L520.538 124.784L520.538 91.4542L490.007 62.291Z" fill="white"/>
+          <path d="M548.757 62.291L548.757 185.193L579.289 185.193L579.289 93.5373L640.352 123.742L701.416 94.5788L701.416 62.291L640.352 93.5373L579.289 62.291L548.757 62.291Z" fill="white"/>
+          <path d="M701.416 94.5781L733.001 94.5781L733.001 185.192L701.416 185.192L701.416 94.5781Z" fill="white"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
+        </svg>
+      </div>
+      <div class="pw-title">Acesso restrito</div>
+      <div class="pw-sub">Insira a senha para visualizar o calendário</div>
+      <input id="pw-input" class="pw-input" type="password" placeholder="••••••" autocomplete="off"/>
+      <button class="pw-btn" onclick="checkPw()">Entrar</button>
+      <div id="pw-err" class="pw-err"></div>
+    </div>
+  </div>
+
+  <div id="root"></div>
+
+  <script>
+    const CORRECT = "IPM@1";
+    const PW_KEY  = "ipm_cal_auth";
+
+    function checkPw() {
+      const val = document.getElementById("pw-input").value;
+      if (val === CORRECT) {
+        sessionStorage.setItem(PW_KEY, "1");
+        document.getElementById("pw-overlay").classList.add("hidden");
+      } else {
+        const inp = document.getElementById("pw-input");
+        inp.classList.add("error");
+        document.getElementById("pw-err").textContent = "Senha incorreta. Tente novamente.";
+        inp.value = "";
+        setTimeout(() => inp.classList.remove("error"), 400);
+      }
+    }
+
+    document.getElementById("pw-input").addEventListener("keydown", e => {
+      if (e.key === "Enter") checkPw();
+    });
+
+    if (sessionStorage.getItem(PW_KEY) === "1") {
+      document.getElementById("pw-overlay").classList.add("hidden");
+    }
+  </script>
+
+  <script type="text/babel" data-presets="react">
+    const { useState, useEffect } = React;
+
+    // ─── URLs das planilhas ────────────────────────────────────────────────────
+    const SHEET_MAIN    = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ_PsyMgaQT-p3mefhOaHDfxZG4lWx2QjQvoooEphGWBC5lXIVV4Cp9Kj7mBxszJZBvqfrN74QBPGrj/pub?output=csv";
+    const SHEET_EVENTOS = ""; // preencher com a URL da aba "eventos" quando criada
+
+    // ─── Constantes visuais ───────────────────────────────────────────────────
+    const OG = "#E05500";
+    const BK = "#1C1C2E";
+
+    const START = new Date(2026, 5, 1);
+    const END_X = new Date(2028, 0, 1);
+    const TODAY = new Date();
+    const TOTAL = END_X - START;
+
+    const cpct    = d => Math.max(0, Math.min(100, ((new Date(d) - START) / TOTAL) * 100));
+    const MO_PT   = ["JAN","FEV","MAR","ABR","MAI","JUN","JUL","AGO","SET","OUT","NOV","DEZ"];
+    const fmtFull = ds => { const [y,m,d] = ds.split("-"); return `${d}/${m}/${y}`; };
+    const txtClr  = hex => {
+      const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+      return (0.299*r+0.587*g+0.114*b)/255 > 0.60 ? BK : "white";
+    };
+
+    const MONTHS = [];
+    for (let y=2026; y<=2027; y++) {
+      for (let m=y===2026?5:0; m<=11; m++) {
+        const d0=new Date(y,m,1), d1=new Date(y,m+1,1);
+        MONTHS.push({ key:`${y}-${m}`, lbl:MO_PT[m], isJan:m===0,
+          left:((d0-START)/TOTAL)*100, width:((d1-d0)/TOTAL)*100 });
+      }
+    }
+    const JP = ((new Date(2027,0,1)-START)/TOTAL)*100;
+    const TP = ((TODAY-START)/TOTAL)*100;
+
+    // ─── CSV parser ───────────────────────────────────────────────────────────
+    function splitCSVLine(line) {
+      const result = [];
+      let cur = "", inQ = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') { inQ = !inQ; }
+        else if (c === ',' && !inQ) { result.push(cur); cur = ""; }
+        else { cur += c; }
+      }
+      result.push(cur);
+      return result;
+    }
+
+    function parseCSV(text) {
+      const clean = text.replace(/^﻿/, "").trim();
+      const lines = clean.split(/\r?\n/);
+      const headers = splitCSVLine(lines[0]).map(h => h.trim());
+      const rows = [];
+      for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        const vals = splitCSVLine(lines[i]);
+        const obj = {};
+        headers.forEach((h, idx) => { obj[h] = (vals[idx] || "").trim(); });
+        rows.push(obj);
+      }
+      return rows;
+    }
+
+    // ─── Monta PRODS a partir das linhas do CSV ───────────────────────────────
+    function buildProds(mainRows, evRows) {
+      const map = {};
+      const order = [];
+
+      for (const r of mainRows) {
+        const id = r.produto_id;
+        if (!id) continue;
+
+        if (!map[id]) {
+          map[id] = {
+            id,
+            name: r.produto_nome,
+            color: r.produto_cor,
+            _ordem: parseInt(r.produto_ordem) || 99,
+            rows: [],
+            provas: [],
+            panel: { provas: [], notas: [], turmas: [] }
+          };
+          order.push(id);
+        }
+
+        const prod = map[id];
+
+        // status: "—" → null, "★" → "marco", demais mantém
+        const rawSt = (r.status || "—").trim();
+        const st = rawSt === "—" ? null : rawSt === "★" ? "marco" : rawSt;
+
+        const hasV = r.vendas_inicio && r.vendas_inicio !== "—";
+        const hasC = r.curso_inicio  && r.curso_inicio  !== "—";
+        const v = hasV ? [r.vendas_inicio, r.vendas_fim] : null;
+        const c = hasC ? [r.curso_inicio,  r.curso_fim]  : null;
+
+        prod.rows.push({ lbl: r.turma_label, st, v, c });
+
+        // painel: gera detalhes automáticos de datas
+        const details = [];
+        if (hasV) details.push(`Vendas: ${fmtFull(r.vendas_inicio)} → ${fmtFull(r.vendas_fim)}`);
+        if (hasC) details.push(`Curso: ${fmtFull(r.curso_inicio)} → ${fmtFull(r.curso_fim)}`);
+        prod.panel.turmas.push({ n: r.turma_label, rows: details });
+      }
+
+      // eventos (gems + painel)
+      for (const ev of evRows) {
+        const prod = map[ev.produto_id];
+        if (!prod || !ev.data || !ev.descricao) continue;
+        prod.provas.push({ d: ev.data, t: ev.descricao });
+        prod.panel.provas.push(`${ev.descricao}: ${fmtFull(ev.data)}`);
+      }
+
+      return order.map(id => map[id]).sort((a, b) => a._ordem - b._ordem);
+    }
+
+    // ─── Componentes ─────────────────────────────────────────────────────────
+    const IPMLogo = () => (
+      <svg viewBox="0 0 733 247" height="38" xmlns="http://www.w3.org/2000/svg" style={{display:"block"}}>
+        <path d="M303.449 60.3652L335.137 60.3652L335.137 91.6953L335.137 183.597L303.449 183.597L303.449 123.025L335.137 91.6953L303.449 91.6953L303.449 60.3652Z" fill="white"/>
+        <path d="M490.007 62.291L398.411 62.291L398.411 91.4542L490.007 91.4542L490.007 124.784L397.358 124.784L366.826 154.988L366.826 185.193L398.411 185.193L398.411 153.947L490.007 153.947L520.538 124.784L520.538 91.4542L490.007 62.291Z" fill="white"/>
+        <path d="M548.757 62.291L548.757 185.193L579.289 185.193L579.289 93.5373L640.352 123.742L701.416 94.5788L701.416 62.291L640.352 93.5373L579.289 62.291L548.757 62.291Z" fill="white"/>
+        <path d="M701.416 94.5781L733.001 94.5781L733.001 185.192L701.416 185.192L701.416 94.5781Z" fill="white"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
+        <path fillRule="evenodd" clipRule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
+      </svg>
+    );
+
+    const Gem = ({ color=OG, sz=11 }) => (
+      <svg width={sz} height={sz} viewBox="0 0 10 10" style={{ display:"block", flexShrink:0 }}>
+        <polygon points="5,0 10,5 5,10 0,5" fill={color}/>
+      </svg>
+    );
+
+    const stripe       = c => `repeating-linear-gradient(-45deg,${c}32,${c}32 2px,transparent 2px,transparent 7px)`;
+    const stripeLegend = c => `repeating-linear-gradient(-45deg,${c},${c} 2px,transparent 2px,transparent 7px)`;
+
+    const GLines = () => (
+      <>
+        {MONTHS.map(m=>(
+          <div key={m.key} style={{ position:"absolute",left:`${m.left}%`,top:0,bottom:0,
+                                     width:1,background:"#E4E8F4",zIndex:1,pointerEvents:"none" }}/>
+        ))}
+        <div style={{ position:"absolute",left:`${JP}%`,top:0,bottom:0,width:2,
+                      background:`${OG}28`,zIndex:5,pointerEvents:"none",transform:"translateX(-1px)" }}/>
+        <div style={{ position:"absolute",left:`${TP}%`,top:0,bottom:0,width:2,
+                      background:`${OG}D0`,zIndex:6,pointerEvents:"none",transform:"translateX(-1px)" }}/>
+      </>
+    );
+
+    const LoadingScreen = () => (
+      <div style={{ height:"100vh", background:"#EEF1F7", display:"flex", flexDirection:"column",
+                    alignItems:"center", justifyContent:"center", gap:16,
+                    fontFamily:'system-ui,-apple-system,sans-serif' }}>
+        <svg viewBox="0 0 246 247" width="44" height="44" style={{opacity:0.25,animation:"spin 1.8s linear infinite"}}>
+          <path fillRule="evenodd" clipRule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
+          <path fillRule="evenodd" clipRule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
+          <path fillRule="evenodd" clipRule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
+          <path fillRule="evenodd" clipRule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
+        </svg>
+        <span style={{ fontSize:12, fontWeight:600, color:"#A0ABCC", letterSpacing:1 }}>
+          Carregando calendário…
+        </span>
+      </div>
+    );
+
+    // ─── App principal ────────────────────────────────────────────────────────
+    function App() {
+      const [prods, setProds]   = useState(null);
+      const [loadErr, setErr]   = useState(null);
+      const [sel, setSel]       = useState(null);
+      const [tip, setTip]       = useState(null);
+
+      useEffect(() => {
+        async function load() {
+          try {
+            const fetches = [fetch(SHEET_MAIN)];
+            if (SHEET_EVENTOS) fetches.push(fetch(SHEET_EVENTOS).catch(() => null));
+
+            const [mainRes, evRes] = await Promise.all(fetches);
+            const mainText = await mainRes.text();
+            const evText   = evRes ? await evRes.text() : "";
+
+            const mainRows = parseCSV(mainText);
+            const evRows   = evText ? parseCSV(evText) : [];
+
+            setProds(buildProds(mainRows, evRows));
+          } catch(e) {
+            setErr(e.message);
+          }
+        }
+        load();
+      }, []);
+
+      if (loadErr) return (
+        <div style={{ height:"100vh", background:"#EEF1F7", display:"flex", alignItems:"center",
+                      justifyContent:"center", fontFamily:"system-ui,sans-serif" }}>
+          <div style={{ background:"white", borderRadius:12, padding:"24px 32px",
+                        border:"1px solid #E4E8F4", maxWidth:400, textAlign:"center" }}>
+            <div style={{ fontSize:13, fontWeight:700, color:"#E05500", marginBottom:8 }}>Erro ao carregar dados</div>
+            <div style={{ fontSize:11, color:"#8090B4" }}>{loadErr}</div>
+          </div>
+        </div>
+      );
+
+      if (!prods) return <LoadingScreen/>;
+
+      const sp = prods.find(x => x.id === sel);
+      const SW=186, GH=34, RH=44, GP=5;
+
+      return (
+        <>
+          <style>{`
+            @keyframes pIn{from{transform:translateX(14px);opacity:0}to{transform:translateX(0);opacity:1}}
+            ::-webkit-scrollbar{width:5px;height:5px}
+            ::-webkit-scrollbar-track{background:#EEF1F7}
+            ::-webkit-scrollbar-thumb{background:#C8D0E4;border-radius:3px}
+            ::-webkit-scrollbar-thumb:hover{background:#A8B4CC}
+          `}</style>
+
+          <div style={{ background:"#EEF1F7", color:BK, height:"100vh", display:"flex",
+                        flexDirection:"column", fontFamily:'system-ui,-apple-system,"Segoe UI",sans-serif',
+                        overflow:"hidden" }}>
+
+            {/* TOP BAR */}
+            <div style={{ flexShrink:0, padding:"11px 20px 10px", background:"#000",
+                          borderBottom:"1px solid #222" }}>
+              <div style={{ display:"flex", alignItems:"center", gap:18, marginBottom:10 }}>
+                <IPMLogo/>
+                <div style={{ borderLeft:"1px solid #333", paddingLeft:18 }}>
+                  <div style={{ fontSize:9, fontWeight:800, letterSpacing:2.5, color:"rgba(255,255,255,0.4)", textTransform:"uppercase", marginBottom:2 }}>Calendário de Produtos</div>
+                  <div style={{ fontSize:14, fontWeight:700, color:"white", letterSpacing:0.3 }}>Jun 2026 → Dez 2027</div>
+                </div>
+              </div>
+              <div style={{ display:"flex", gap:16, flexWrap:"wrap", alignItems:"center" }}>
+                {[
+                  [<div style={{ width:24,height:9,background:OG,borderRadius:5 }}/>, "Período de vendas"],
+                  [<div style={{ width:24,height:8,background:OG,opacity:0.4,borderRadius:4 }}/>, "Período do curso"],
+                  [<div style={{ width:24,height:10,borderRadius:5,border:`2px solid ${OG}`,background:stripeLegend(OG) }}/>, "Marco de oportunidade"],
+                  [<div style={{ width:24,height:9,border:"2px dashed rgba(255,255,255,0.25)",borderRadius:5 }}/>, "A definir"],
+                  [<Gem color={OG} sz={9}/>, "Evento importante"],
+                  [<div style={{ width:2,height:14,background:OG }}/>, "Hoje"],
+                  [<div style={{ width:2,height:14,background:`${OG}50` }}/>, "Jan 2027"],
+                ].map(([el,lbl],i)=>(
+                  <div key={i} style={{ display:"flex", alignItems:"center", gap:5 }}>
+                    {el}<span style={{ fontSize:10, color:"rgba(255,255,255,0.75)" }}>{lbl}</span>
+                  </div>
+                ))}
+                <span style={{ marginLeft:"auto", fontSize:10, color:"rgba(255,255,255,0.25)", fontStyle:"italic" }}>
+                  ← clique num produto para detalhes
+                </span>
+              </div>
+            </div>
+
+            {/* MAIN SCROLL */}
+            <div style={{ flex:1, overflow:"auto" }}>
+              <div style={{ minWidth:870 }}>
+
+                {/* MONTH HEADER */}
+                <div style={{ display:"flex", position:"sticky", top:0, zIndex:25, height:52,
+                              background:"white", borderBottom:"1px solid #DDE2EE",
+                              boxShadow:"0 2px 10px rgba(0,0,0,0.06)" }}>
+                  <div style={{ width:SW, flexShrink:0, position:"sticky", left:0, zIndex:26,
+                                background:"white", borderRight:"1px solid #E4E8F4",
+                                display:"flex", alignItems:"flex-end", padding:"0 14px 7px" }}>
+                    <span style={{ fontSize:8,color:"#C0C8DC",fontWeight:700,letterSpacing:2 }}>PRODUTO</span>
+                  </div>
+                  <div style={{ flex:1, position:"relative", overflow:"visible" }}>
+                    <div style={{ position:"absolute",top:4,left:0,width:`${JP}%`,fontSize:8,fontWeight:800,
+                                  letterSpacing:2,color:`${OG}60`,textAlign:"center",textTransform:"uppercase",pointerEvents:"none" }}>2026</div>
+                    <div style={{ position:"absolute",top:4,left:`${JP}%`,right:0,fontSize:8,fontWeight:800,
+                                  letterSpacing:2,color:`${BK}50`,textAlign:"center",textTransform:"uppercase",pointerEvents:"none" }}>2027</div>
+                    <div style={{ position:"absolute",top:3,left:`${TP}%`,transform:"translateX(-50%)",
+                                  fontSize:7,fontWeight:800,color:OG,letterSpacing:1,
+                                  whiteSpace:"nowrap",textTransform:"uppercase",pointerEvents:"none",opacity:0.85 }}>hoje</div>
+                    {MONTHS.map(m=>(
+                      <div key={m.key} style={{ position:"absolute",left:`${m.left}%`,width:`${m.width}%`,
+                          bottom:0,height:30,display:"flex",alignItems:"center",justifyContent:"center",
+                          fontSize:11,color:m.isJan?BK:"#A0ABCC",fontWeight:m.isJan?700:500,
+                          letterSpacing:0.5,borderLeft:m.isJan?`2px solid ${OG}55`:"1px solid #E4E8F4" }}>
+                        {m.lbl}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* PRODUCT GROUPS */}
+                {prods.map((prod,pi)=>{
+                  const odd   = pi%2===1;
+                  const grpBg = odd?"#F8F9FE":"#FFFFFF";
+                  const rA    = odd?"#F6F7FC":"#FAFBFF";
+                  const rB    = odd?"#F2F4FA":"#F6F8FD";
+                  const isOpen = sel===prod.id;
+                  const tc    = txtClr(prod.color);
+
+                  return (
+                    <div key={prod.id}>
+                      <div style={{ display:"flex",height:GH,cursor:"pointer" }}
+                           onClick={()=>setSel(isOpen?null:prod.id)}>
+                        <div style={{ width:SW,flexShrink:0,position:"sticky",left:0,zIndex:10,
+                                      background:grpBg,borderBottom:"1px solid #E4E8F4",
+                                      borderRight:"1px solid #E4E8F4",borderLeft:`4px solid ${prod.color}`,
+                                      display:"flex",alignItems:"center",gap:8,padding:"0 10px 0 12px",
+                                      userSelect:"none" }}>
+                          <div style={{ width:8,height:8,borderRadius:"50%",background:prod.color,flexShrink:0 }}/>
+                          <span style={{ fontSize:12,fontWeight:800,color:isOpen?prod.color:BK,flex:1,
+                                         whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",
+                                         transition:"color 0.15s" }}>{prod.name}</span>
+                          <span style={{ fontSize:9,color:"#BCC4D8",flexShrink:0 }}>{isOpen?"◀":"▶"}</span>
+                        </div>
+                        <div style={{ flex:1,background:grpBg,borderBottom:"1px solid #E4E8F4",
+                                      position:"relative",overflow:"visible" }}>
+                          <GLines/>
+                          {prod.provas.map((prv,ri)=>{
+                            const px=((new Date(prv.d)-START)/TOTAL)*100;
+                            if(px<0||px>100) return null;
+                            return(
+                              <div key={ri} style={{ position:"absolute",left:`${px}%`,top:"50%",
+                                                     transform:"translate(-50%,-50%)",zIndex:12,cursor:"help" }}
+                                onMouseEnter={e=>setTip({x:e.clientX,y:e.clientY,t:`${prv.t} · ${fmtFull(prv.d)}`})}
+                                onMouseLeave={()=>setTip(null)}>
+                                <Gem color={prod.color} sz={13}/>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {prod.rows.map((row,ri)=>{
+                        const isDash  = row.st==="stand-by"||row.st==="a-definir";
+                        const isMarco = row.st==="marco";
+                        const rbg     = ri%2===0?rA:rB;
+                        let vL=null,vW=null,cL=null,cW=null;
+                        if(row.v){ const l=cpct(row.v[0]),r=cpct(row.v[1]); vL=l; vW=Math.max(0.4,r-l); }
+                        if(row.c){ const l=cpct(row.c[0]),r=cpct(row.c[1]); cL=l; cW=Math.max(0.4,r-l); }
+
+                        return(
+                          <div key={ri} style={{ display:"flex",height:RH,cursor:"pointer" }}
+                               onClick={()=>setSel(isOpen?null:prod.id)}>
+                            <div style={{ width:SW,flexShrink:0,position:"sticky",left:0,zIndex:10,
+                                          background:rbg,borderBottom:"1px solid #EAEEF6",
+                                          borderRight:"1px solid #E4E8F4",borderLeft:"4px solid transparent",
+                                          display:"flex",alignItems:"center",paddingLeft:28,paddingRight:8 }}>
+                              <span style={{ fontSize:10,color:prod.color,fontWeight:700,
+                                             whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>
+                                {row.lbl}
+                              </span>
+                            </div>
+                            <div style={{ flex:1,background:rbg,borderBottom:"1px solid #EAEEF6",
+                                          position:"relative",overflow:"visible" }}>
+                              <GLines/>
+                              {cL!==null&&(
+                                <div
+                                  onMouseEnter={e=>setTip({x:e.clientX,y:e.clientY,
+                                    t:`Período do curso: ${fmtFull(row.c[0])} → ${fmtFull(row.c[1])}`})}
+                                  onMouseLeave={()=>setTip(null)}
+                                  style={{ position:"absolute",left:`${cL}%`,width:`${cW}%`,
+                                            top:7,height:24,background:prod.color,
+                                            borderRadius:8,opacity:isDash?0.07:0.22,zIndex:3,cursor:"default" }}/>
+                              )}
+                              {vL!==null&&(
+                                <div
+                                  onMouseEnter={e=>setTip({x:e.clientX,y:e.clientY,
+                                    t:`${row.lbl}: ${fmtFull(row.v[0])} → ${fmtFull(row.v[1])}`})}
+                                  onMouseLeave={()=>setTip(null)}
+                                  style={{
+                                    position:"absolute",left:`${vL}%`,width:`${vW}%`,
+                                    top:7,height:24,borderRadius:8,zIndex:4,
+                                    display:"flex",alignItems:"center",paddingLeft:8,overflow:"hidden",
+                                    background: isDash?"transparent": isMarco?stripe(prod.color): prod.color,
+                                    border: isDash?`2px dashed ${prod.color}`: isMarco?`2px solid ${prod.color}CC`:"none",
+                                    opacity: isDash?0.55:1,
+                                    boxShadow: (!isDash&&!isMarco)?`0 2px 8px ${prod.color}28`:"none",
+                                  }}>
+                                  {!isDash && vW>5 && (
+                                    <span style={{ fontSize:10,fontWeight:700,
+                                                   color:isMarco?prod.color:tc,
+                                                   whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis" }}>
+                                      {row.lbl}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+
+                      <div style={{ display:"flex",height:GP }}>
+                        <div style={{ width:SW,flexShrink:0,position:"sticky",left:0,
+                                      background:"#EEF1F7",borderBottom:"1px solid #DDE2EE",
+                                      borderRight:"1px solid #E4E8F4" }}/>
+                        <div style={{ flex:1,background:"#EEF1F7",borderBottom:"1px solid #DDE2EE" }}/>
+                      </div>
+                    </div>
+                  );
+                })}
+                <div style={{ height:24 }}/>
+              </div>
+            </div>
+
+            {/* SIDE PANEL */}
+            {sp&&(
+              <div style={{ position:"fixed",top:0,right:0,bottom:0,width:300,
+                            background:"white",borderLeft:`3px solid ${sp.color}`,
+                            zIndex:50,display:"flex",flexDirection:"column",
+                            boxShadow:"-10px 0 40px rgba(0,0,0,0.12)",animation:"pIn 0.2s ease" }}>
+                <div style={{ padding:"14px 14px 12px",borderBottom:"1px solid #EEF1F8",
+                              background:`${sp.color}12`,flexShrink:0,
+                              display:"flex",alignItems:"center",justifyContent:"space-between" }}>
+                  <div style={{ display:"flex",alignItems:"center",gap:8 }}>
+                    <div style={{ width:10,height:10,borderRadius:"50%",background:sp.color }}/>
+                    <span style={{ fontSize:13,fontWeight:800,color:sp.color }}>{sp.name}</span>
+                  </div>
+                  <button onClick={()=>setSel(null)}
+                    style={{ background:"none",border:"none",color:"#A8B4CC",
+                             cursor:"pointer",fontSize:18,padding:"2px 6px",lineHeight:1 }}>✕</button>
+                </div>
+                <div style={{ flex:1,overflowY:"auto",padding:14 }}>
+                  {sp.panel.provas.length>0&&(
+                    <div style={{ marginBottom:18 }}>
+                      <div style={{ display:"flex",alignItems:"center",gap:5,marginBottom:8 }}>
+                        <Gem color={sp.color} sz={8}/>
+                        <span style={{ fontSize:8,fontWeight:800,letterSpacing:2.5,
+                                       color:sp.color,opacity:0.85,textTransform:"uppercase" }}>
+                          Eventos
+                        </span>
+                      </div>
+                      {sp.panel.provas.map((l,i)=>(
+                        <div key={i} style={{ fontSize:11,color:"#6878A0",marginBottom:4,
+                                              paddingLeft:10,borderLeft:`2px solid ${sp.color}35` }}>{l}</div>
+                      ))}
+                    </div>
+                  )}
+                  <div style={{ marginBottom:18 }}>
+                    <div style={{ fontSize:8,fontWeight:800,letterSpacing:2.5,
+                                   color:`${sp.color}88`,textTransform:"uppercase",marginBottom:10 }}>
+                      Turmas / Marcos
+                    </div>
+                    {sp.panel.turmas.map((t,i)=>(
+                      <div key={i} style={{ marginBottom:10,padding:"10px 12px",
+                                            background:"#F4F6FC",borderRadius:8,
+                                            border:`1px solid ${sp.color}22` }}>
+                        <div style={{ fontSize:11,fontWeight:700,color:BK,marginBottom:6 }}>{t.n}</div>
+                        {t.rows.map((r,ri)=>(
+                          <div key={ri} style={{ fontSize:11,color:"#8090B4",marginBottom:2,paddingLeft:6 }}>· {r}</div>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  {sp.panel.notas.length>0&&(
+                    <div>
+                      <div style={{ fontSize:8,fontWeight:800,letterSpacing:2.5,
+                                     color:"#C0C8DC",textTransform:"uppercase",marginBottom:8 }}>Notas</div>
+                      {sp.panel.notas.map((n,i)=>(
+                        <div key={i} style={{ fontSize:11,color:"#8090B4",marginBottom:5,
+                                              paddingLeft:8,borderLeft:"2px solid #E4E8F4" }}>{n}</div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* TOOLTIP */}
+            {tip&&(
+              <div style={{ position:"fixed",left:tip.x+12,top:tip.y-40,
+                            background:BK,color:"white",fontSize:11,
+                            padding:"6px 11px",borderRadius:7,zIndex:100,
+                            pointerEvents:"none",whiteSpace:"nowrap",
+                            boxShadow:"0 4px 16px rgba(0,0,0,0.25)" }}>
+                {tip.t}
+              </div>
+            )}
+          </div>
+        </>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App/>);
+  </script>
+</body>
+</html>
