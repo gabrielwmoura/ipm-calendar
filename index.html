@@ -110,7 +110,7 @@
 
     const START = new Date(2026, 5, 1);
     const END_X = new Date(2028, 0, 1);
-    const TODAY = new Date(2026, 5, 22);
+    const TODAY = new Date();
     const TOTAL = END_X - START;
 
     const cpct    = d => Math.max(0, Math.min(100, ((new Date(d) - START) / TOTAL) * 100));
