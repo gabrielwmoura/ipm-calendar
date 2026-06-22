@@ -30,9 +30,11 @@ const TP = ((TODAY-START)/TOTAL)*100;
 // ─── Logo ────────────────────────────────────────────────────────────────────
 const IPMLogo = () => (
   <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-    <svg viewBox="0 0 52 52" width="40" height="40">
-      <polygon points="38,3 49,14 14,49 3,38" fill="#7A2500"/>
-      <polygon points="3,14 14,3 49,38 38,49" fill="#E05200"/>
+    <svg viewBox="0 0 246 247" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+      <path fillRule="evenodd" clipRule="evenodd" d="M245.92 0.441406L135.317 49.6126L122.949 61.9764V123.369L135.317 111.005L245.92 61.9764V0.441406Z" fill="#F15726"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M0 0.441406L110.603 49.6126L122.971 61.9764V123.369L110.603 111.005L0 61.9764V0.441406Z" fill="#B84900"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M245.92 246.296L135.317 197.125L122.949 184.761V123.368L135.317 135.732L245.92 184.761V246.296Z" fill="#B84900"/>
+      <path fillRule="evenodd" clipRule="evenodd" d="M0 246.296L110.603 197.125L122.971 184.903V123.368L110.603 135.732L0 184.903V246.296Z" fill="#F15726"/>
     </svg>
     <span style={{ fontSize:24, fontWeight:900, letterSpacing:-1,
                    fontFamily:"system-ui,-apple-system,sans-serif", color:BK, lineHeight:1 }}>
